@@ -16,7 +16,7 @@ module.exports = class Game {
         }
     }
 
-    setSquare (pos) {
+    setSquareAndChangeTurns (pos) {
         this.board(pos) = this.turn;                    // set the 
         this.turn = this.turn === 'x' ? 'o' : 'x';
     }
@@ -40,5 +40,13 @@ module.exports = class Game {
         } else {
             return null;
         }
+    }
+
+    toJson () {
+        return {
+            turn: this.turn,
+            board: this.board,
+            winner: this.winnerOfGame()
+        };
     }
 }

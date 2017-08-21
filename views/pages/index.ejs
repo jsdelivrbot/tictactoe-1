@@ -12,13 +12,13 @@
   <h1>Tic Tac Toe!</h1>
 
   <table class="table" id="players">
-    <tr id="player1">
-      <td id="player1-name">Gang</td>
-      <td id="player1-turn">X</td>
+    <tr id="player-x">
+      <td id="player-x-name">Gang</td>
+      <td id="player-x-turn">X</td>
     </tr>
-    <tr id="player2">
-      <td id="player2-name">Jess</td>
-      <td id="player2-turn">O</td>
+    <tr id="player-o">
+      <td id="player-o-name">Jess</td>
+      <td id="player-o-turn">O</td>
     </tr>
   </table>
 
@@ -46,32 +46,39 @@
       const socket = io();
 
       let moves = {};   // tracks current moves
-      let currentTurn = 'X';
 
-      let makeMove = (pos) => {
-        $('#current-turn').text(currentTurn);
-        $(`#${pos}`).text(currentTurn);
+      let updateTurn = (turn) => {
+        $('#current-turn').text(turn);
       }
 
-      let updateTurn = () => {
-        currentTurn = currentTurn === 'X' ? 'O' : 'X';
-
+      let updateMarkAtPos = (pos, mark) => {
+        $(`#${pos}`).text(mark);
       }
 
-      $('#tictactoe td').click((event) => {
-        let pos = event.target.id;
-
-        
-      });
-
+      let updateBoard = (board) => {
+        Object.keys(board).forEach(pos => {
+          let mark = board[pos];
+          if (mark !== null) {
+            updateMarkAtPos(pos, mark);
+          }
+        });
+      }
 
       socket.on('connect', () => {
         console.log('Connected to websocket')
       })
 
-      socket.on('newGame', data => {
-        console.log(data);
-      })
+      socket.on('gameInfo', data => {
+        // data ->{turn: 'X', board: {'11': null, '12': 'X', ...}, winner: 'X' } });
+        updateTurn(data.turn);
+        updateBoard(data.board);
+      });
+
+      // click on a square -> make a move
+      $('#tictactoe td').click((event) => {
+        let pos = event.target.id;
+        socket.emit('makeMove', {pos: pos});
+      });
     })
 
   </script>

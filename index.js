@@ -27,30 +27,33 @@ const server = app.listen(app.get('port'), () => {
   console.log('Node app is running on port', app.get('port'));
 });
 
-app.get('/game', (req, res) => {
-    currentGame = currentGame || new Game();
-    res.json(currentGame.toJson());
-});
-
-app.delete('/game', (req, res) => {
-    currentGame = null;
-    player1 = null;
-    player2 = null;
-    res.json({success: true});
-})
-
 io.listen(server).on('connection', function(socket){
   console.log('a user connected');
 
   /*
+
     socket events:
 
-    getGame      - gets a current game, if any
+    gameInfo     - gets a current game, if any
     newPlayer    - adds a new player to the game
     startGame    - starts a game after 2 players are detected
     makeMove     - player makes a move
     newGame      - ends the current game and restarts
   */
 
-  socket.emit('newGame', {game: 'NEWEWENWEN'});
+  currentGame = new Game();
+
+  socket.emit('gameInfo', currentGame.toJson())
+
+  socket.on('makeMove', data => {
+    // Server is the source of truth for turns
+    // Client sends the position only
+    // data = {pos: pos}
+
+    currentGame.setSquareAndChangeTurns(data.pos);
+    socket.emit('gameInfo', currentGame.toJson());
+    console.log(currentGame.toJson())
+
+  })
+
 });

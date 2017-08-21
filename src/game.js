@@ -2,7 +2,7 @@
 
 module.exports = class Game {
     constructor() {
-        this.turn = 'x';     // x always starts
+        this.turn = 'X';     // x always starts
         this.board = {       // 1-3 represents the coordinates of the board
             '11': null,      // '11' is position (1,1), or the upper left corner
             '12': null,
@@ -17,8 +17,8 @@ module.exports = class Game {
     }
 
     setSquareAndChangeTurns (pos) {
-        this.board(pos) = this.turn;                    // set the 
-        this.turn = this.turn === 'x' ? 'o' : 'x';
+        this.board[pos] = this.turn;                    // set the 
+        this.turn = this.turn === 'X' ? 'O' : 'X';
     }
 
     threeInARow (pos1, pos2, pos3) {

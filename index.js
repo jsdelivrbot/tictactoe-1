@@ -23,6 +23,10 @@ app.get('/', (req, res) => {
   res.render('pages/index');
 });
 
+const server = app.listen(app.get('port'), () => {
+  console.log('Node app is running on port', app.get('port'));
+});
+
 app.get('/game', (req, res) => {
     currentGame = currentGame || new Game();
     res.json(currentGame.toJson());
@@ -35,16 +39,18 @@ app.delete('/game', (req, res) => {
     res.json({success: true});
 })
 
-app.post('/move', (req, res) => {
-    console.log(res);
-});
-
-const server = app.listen(app.get('port'), () => {
-  console.log('Node app is running on port', app.get('port'));
-});
-
 io.listen(server).on('connection', function(socket){
   console.log('a user connected');
+
+  /*
+    socket events:
+
+    getGame      - gets a current game, if any
+    newPlayer    - adds a new player to the game
+    startGame    - starts a game after 2 players are detected
+    makeMove     - player makes a move
+    newGame      - ends the current game and restarts
+  */
 
   socket.emit('newGame', {game: 'NEWEWENWEN'});
 });

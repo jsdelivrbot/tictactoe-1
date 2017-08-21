@@ -9,7 +9,18 @@
 
 <body class="container">
 
-  <h1>HELO!</h1>
+  <h1>Tic Tac Toe!</h1>
+
+  <table class="table" id="players">
+    <tr id="player1">
+      <td id="player1-name">Gang</td>
+      <td id="player1-turn">X</td>
+    </tr>
+    <tr id="player2">
+      <td id="player2-name">Jess</td>
+      <td id="player2-turn">O</td>
+    </tr>
+  </table>
 
   <table class="table" id="tictactoe">
     <tr>
@@ -34,8 +45,28 @@
     $(() => {
       const socket = io();
 
+      let moves = {};   // tracks current moves
+      let currentTurn = 'X';
+
+      let makeMove = (pos) => {
+        $('#current-turn').text(currentTurn);
+        $(`#${pos}`).text(currentTurn);
+      }
+
+      let updateTurn = () => {
+        currentTurn = currentTurn === 'X' ? 'O' : 'X';
+
+      }
+
+      $('#tictactoe td').click((event) => {
+        let pos = event.target.id;
+
+        
+      });
+
+
       socket.on('connect', () => {
-        console.log('hsdfhasfasj;f')
+        console.log('Connected to websocket')
       })
 
       socket.on('newGame', data => {

@@ -16,15 +16,13 @@
   <table class="table" id="players">
     <tr id="player-x">
       <td class="name">
-        <button class="player-btn">Join</button>
-        <p class="name-text"></p>
+        <button id="player-btn-x">Join</button>
       </td>
       <td id="player-x-turn">X</td>
     </tr>
     <tr id="player-o">
       <td class="name">
-        <button class="player-btn" >Join</button>
-        <p class="name-text"></p>
+        <button id="player-btn-o">Join</button>
       </td>
       <td id="player-o-turn">O</td>
     </tr>
@@ -56,6 +54,7 @@
       const socket = io();
 
       let boardData = null;   // tracks current moves
+      let gameCanStart = false;
 
       let updateTurn = (turn) => {
         $('#current-turn').text(turn);
@@ -87,11 +86,23 @@
         }
       });
 
-      $('#')
+      socket.on('newGame', () => {
+        gameCanStart = true;
+        console.log('asdfasdfsadf');
+      })
+
+      $('#player-btn-o').click(() => {
+        socket.emit('newPlayer', {mark: 'O'});
+      });
+
+
+      $('#player-btn-x').click(() => {
+        socket.emit('newPlayer', {mark: 'X'});
+      });
 
       // click on a square -> make a move
       $('#tictactoe td').click((event) => {
-        if (boardData.winner === null) {
+        if (boardData.winner === null && gameCanStart) {
           let pos = event.target.id;
           socket.emit('makeMove', {pos: pos});
         }
@@ -100,6 +111,7 @@
       $('#new-game-btn').click(event => {
         $('#winner').text('').addClass('hide').removeClass('show');
         socket.emit('eraseGame');
+        gameCanStart = false;
       });
 
     })

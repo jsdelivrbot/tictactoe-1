@@ -34,7 +34,7 @@ io.listen(server).on('connection', function(socket){
 
     gameInfo     - gets a current game, if any
     newPlayer    - adds a new player to the game
-
+    newGame      - indicates a new game has started
     startGame    - starts a game after 2 players are detected
     makeMove     - player makes a move
   */
@@ -44,17 +44,17 @@ io.listen(server).on('connection', function(socket){
   socket.emit('gameInfo', currentGame.toJson())
 
   socket.on('newPlayer', data => {
-    // data = {name: 'Gang', 'mark': 'X'}
+    // data = {'mark': 'X'}
 
     players[socket.id] = {
-        name: data.name,
         mark: data.mark
     }
 
+    console.log(players)
     if (Object.keys(players).length == 2) {
         // start a new game
         currentGame = new Game();
-        socket.emit('gameInfo', currentGame.toJson());
+        socket.emit('newGame');
     }
   })
 
@@ -72,7 +72,6 @@ io.listen(server).on('connection', function(socket){
     players = {};
     currentGame = new Game();
     socket.emit('gameInfo', currentGame.toJson());
-    console.log(currentGame);
   });
 
 

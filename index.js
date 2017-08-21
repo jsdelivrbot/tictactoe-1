@@ -2,7 +2,6 @@
 
 const express = require('express');
 const app = express();
-const io = require('socket.io');
 const Game = require('./src/game');
 
 app.set('port', (process.env.PORT || 5000));
@@ -25,8 +24,9 @@ app.get('/', (req, res) => {
 const server = app.listen(app.get('port'), () => {
   console.log('Node app is running on port', app.get('port'));
 });
+const io = require('socket.io').listen(server);
 
-io.listen(server).on('connection', function(socket){
+io.on('connection', function(socket){
   console.log('a user connected');
   /*
 
@@ -41,7 +41,7 @@ io.listen(server).on('connection', function(socket){
 
   currentGame = new Game();
 
-  socket.emit('gameInfo', currentGame.toJson())
+  io.emit('gameInfo', currentGame.toJson())
 
   socket.on('newPlayer', data => {
     // data = {'mark': 'X'}
@@ -54,7 +54,7 @@ io.listen(server).on('connection', function(socket){
     if (Object.keys(players).length == 2) {
         // start a new game
         currentGame = new Game();
-        socket.emit('newGame');
+        io.emit('newGame');
     }
   })
 
@@ -64,14 +64,14 @@ io.listen(server).on('connection', function(socket){
     // data = {pos: pos}
 
     currentGame.setSquareAndChangeTurns(data.pos);
-    socket.emit('gameInfo', currentGame.toJson());
+    io.emit('gameInfo', currentGame.toJson());
   })
 
   socket.on('eraseGame', () => {
     // erase all player and game data
     players = {};
     currentGame = new Game();
-    socket.emit('gameInfo', currentGame.toJson());
+    io.emit('gameInfo', currentGame.toJson());
   });
 
 

@@ -7,7 +7,7 @@
 * repeat the process if "new game" is selected
 
 ### known bugs
-* only the original browser is receiving updates from the server
+* winner does not properly update in subseqeunt games. 
 
 ### future work
 * add more feedback in the UI

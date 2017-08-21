@@ -41,7 +41,7 @@ io.listen(server).on('connection', function(socket){
 
   currentGame = new Game();
 
-  io.sockets.emit('gameInfo', currentGame.toJson())
+  socket.emit('gameInfo', currentGame.toJson())
 
   socket.on('newPlayer', data => {
     // data = {'mark': 'X'}
@@ -54,7 +54,7 @@ io.listen(server).on('connection', function(socket){
     if (Object.keys(players).length == 2) {
         // start a new game
         currentGame = new Game();
-        io.sockets.emit('newGame');
+        socket.emit('newGame');
     }
   })
 
@@ -64,14 +64,14 @@ io.listen(server).on('connection', function(socket){
     // data = {pos: pos}
 
     currentGame.setSquareAndChangeTurns(data.pos);
-    io.sockets.emit('gameInfo', currentGame.toJson());
+    socket.emit('gameInfo', currentGame.toJson());
   })
 
   socket.on('eraseGame', () => {
     // erase all player and game data
     players = {};
     currentGame = new Game();
-    io.sockets.emit('gameInfo', currentGame.toJson());
+    socket.emit('gameInfo', currentGame.toJson());
   });
 
 

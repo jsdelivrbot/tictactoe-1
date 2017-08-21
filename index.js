@@ -16,8 +16,7 @@ app.set('view engine', 'ejs');
 
 // game stored in local memory
 let currentGame = null;
-let player1 = null;
-let player2 = null;
+let players = {};   // should be two-element object keyed by socket id
 
 app.get('/', (req, res) => {
   res.render('pages/index');
@@ -29,21 +28,35 @@ const server = app.listen(app.get('port'), () => {
 
 io.listen(server).on('connection', function(socket){
   console.log('a user connected');
-
   /*
 
     socket events:
 
     gameInfo     - gets a current game, if any
     newPlayer    - adds a new player to the game
+
     startGame    - starts a game after 2 players are detected
     makeMove     - player makes a move
-    newGame      - ends the current game and restarts
   */
 
   currentGame = new Game();
 
   socket.emit('gameInfo', currentGame.toJson())
+
+  socket.on('newPlayer', data => {
+    // data = {name: 'Gang', 'mark': 'X'}
+
+    players[socket.id] = {
+        name: data.name,
+        mark: data.mark
+    }
+
+    if (Object.keys(players).length == 2) {
+        // start a new game
+        currentGame = new Game();
+        socket.emit('gameInfo', currentGame.toJson());
+    }
+  })
 
   socket.on('makeMove', data => {
     // Server is the source of truth for turns
@@ -52,8 +65,15 @@ io.listen(server).on('connection', function(socket){
 
     currentGame.setSquareAndChangeTurns(data.pos);
     socket.emit('gameInfo', currentGame.toJson());
-    console.log(currentGame.toJson())
-
   })
+
+  socket.on('eraseGame', () => {
+    // erase all player and game data
+    players = {};
+    currentGame = new Game();
+    socket.emit('gameInfo', currentGame.toJson());
+    console.log(currentGame);
+  });
+
 
 });

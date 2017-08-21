@@ -11,13 +11,21 @@
 
   <h1>Tic Tac Toe!</h1>
 
+  <h3 id="winner" class="hide"></h3>
+
   <table class="table" id="players">
     <tr id="player-x">
-      <td id="player-x-name">Gang</td>
+      <td class="name">
+        <button class="player-btn">Join</button>
+        <p class="name-text"></p>
+      </td>
       <td id="player-x-turn">X</td>
     </tr>
     <tr id="player-o">
-      <td id="player-o-name">Jess</td>
+      <td class="name">
+        <button class="player-btn" >Join</button>
+        <p class="name-text"></p>
+      </td>
       <td id="player-o-turn">O</td>
     </tr>
   </table>
@@ -40,12 +48,14 @@
     </tr>
   </table>
 
+  <button class="btn btn-warning" id="new-game-btn">New Game</button>
+
   <script src="/socket.io.js"></script>
   <script>
     $(() => {
       const socket = io();
 
-      let moves = {};   // tracks current moves
+      let boardData = null;   // tracks current moves
 
       let updateTurn = (turn) => {
         $('#current-turn').text(turn);
@@ -58,9 +68,7 @@
       let updateBoard = (board) => {
         Object.keys(board).forEach(pos => {
           let mark = board[pos];
-          if (mark !== null) {
-            updateMarkAtPos(pos, mark);
-          }
+          updateMarkAtPos(pos, mark === null ? '' : mark);
         });
       }
 
@@ -70,15 +78,30 @@
 
       socket.on('gameInfo', data => {
         // data ->{turn: 'X', board: {'11': null, '12': 'X', ...}, winner: 'X' } });
+        boardData = data;
         updateTurn(data.turn);
         updateBoard(data.board);
+
+        if (data.winner !== null) {
+          $('#winner').text(`${data.winner} won!`).addClass('show').removeClass('hide');
+        }
       });
+
+      $('#')
 
       // click on a square -> make a move
       $('#tictactoe td').click((event) => {
-        let pos = event.target.id;
-        socket.emit('makeMove', {pos: pos});
+        if (boardData.winner === null) {
+          let pos = event.target.id;
+          socket.emit('makeMove', {pos: pos});
+        }
       });
+
+      $('#new-game-btn').click(event => {
+        $('#winner').text('').addClass('hide').removeClass('show');
+        socket.emit('eraseGame');
+      });
+
     })
 
   </script>

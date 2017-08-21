@@ -16,6 +16,8 @@ module.exports = class Game {
         }
     }
 
+    
+
     setSquareAndChangeTurns (pos) {
         this.board[pos] = this.turn;                    // set the 
         this.turn = this.turn === 'X' ? 'O' : 'X';

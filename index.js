@@ -45,8 +45,9 @@ io.on('connection', function(socket){
     // data = {'mark': 'X', 'name': 'Gang'}
 
     game.setPlayer(data.mark, data.name, socket.id);
-    console.log(game.players)
-    if (Object.keys(game.players).length == 2) {
+    io.emit('gameInfo', game.toJson());
+
+    if (game.getPlayers().length == 2) {
         // start a new game
         game = new Game();
         io.emit('newGame');

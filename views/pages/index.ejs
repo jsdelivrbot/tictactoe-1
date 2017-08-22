@@ -13,20 +13,13 @@
 
   <h3 id="winner" class="hide"></h3>
 
-  <table class="table" id="players">
-    <tr id="player-x">
-      <td class="name">
-        <button id="player-btn-x">Join</button>
-      </td>
-      <td id="player-x-turn">X</td>
-    </tr>
-    <tr id="player-o">
-      <td class="name">
-        <button id="player-btn-o">Join</button>
-      </td>
-      <td id="player-o-turn">O</td>
-    </tr>
-  </table>
+  <div id="play-btn-container">
+    <button class="btn btn-default play-btn" data-mark="X">Play X</button>
+    <button class="btn btn-default play-btn" data-mark="O">Play O</button>
+  </div>
+
+  <div id="players-container">
+  </div>
 
   <table class="table" id="tictactoe">
     <tr>
@@ -71,11 +64,11 @@
         });
       }
 
-      let toggleWinnerBannerOn = (shouldDisplayBanner, mark) => {
-        if (shouldDisplayBanner) {
-          $('#winner').text(`${mark} won!`).addClass('show').removeClass('hide');
+      let makeElementVisible = (elementShouldBeVisible, $element) => {
+        if (elementShouldBeVisible) {
+          $element.addClass('show').removeClass('hide');
         } else {
-          $('#winner').text('').addClass('hide').removeClass('show');
+          $element.addClass('hide').removeClass('show');
         }
       }
 
@@ -88,11 +81,14 @@
         boardData = data;
         updateTurn(data.turn);
         updateBoard(data.board);
+        // updatePlayers(data.players);
 
+        let $winnerBanner = $('#winner');
         if (data.winner) {
-          toggleWinnerBannerOn(true, data.winner);
+          makeElementVisible(true, $winnerBanner);
+          $winnerBanner.text(`${data.winner} is the winner!`);
         } else {
-          toggleWinnerBannerOn(false);
+          makeElementVisible(false, $winnerBanner);
         }
       });
 
@@ -100,13 +96,12 @@
         gameCanStart = true;
       })
 
-      $('#player-btn-o').click(() => {
-        socket.emit('newPlayer', {mark: 'O'});
-      });
+      $('.play-btn').click((event) => {
+        let mark = event.target.dataset.mark;
+        let name = window.prompt('What is your name?');
+        socket.emit('newPlayer', {mark: mark, name: name});
 
 
-      $('#player-btn-x').click(() => {
-        socket.emit('newPlayer', {mark: 'X'});
       });
 
       // click on a square -> make a move
@@ -122,7 +117,7 @@
         gameCanStart = false;
       });
 
-    })
+    });
 
   </script>
 

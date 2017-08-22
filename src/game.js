@@ -52,10 +52,20 @@ module.exports = class Game {
         return winner;   // winner is winning mark or null
     }
 
+    getPlayers () {
+        let players = {};
+        Object.keys(this.players).forEach(socketId => {
+            let player = this.players[socketId];
+            players[player.mark] = player.name;
+        });
+        return players;
+    }
+
     toJson () {
         return {
             turn: this.turn,
             board: this.board,
+            players: this.getPlayers(),
             winner: this.winnerOfGame()
         };
     }

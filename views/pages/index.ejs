@@ -71,6 +71,14 @@
         });
       }
 
+      let toggleWinnerBannerOn = (shouldDisplayBanner, mark) => {
+        if (shouldDisplayBanner) {
+          $('#winner').text(`${mark} won!`).addClass('show').removeClass('hide');
+        } else {
+          $('#winner').text('').addClass('hide').removeClass('show');
+        }
+      }
+
       socket.on('connect', () => {
         console.log('Connected to websocket')
       })
@@ -81,14 +89,15 @@
         updateTurn(data.turn);
         updateBoard(data.board);
 
-        if (data.winner !== null) {
-          $('#winner').text(`${data.winner} won!`).addClass('show').removeClass('hide');
+        if (data.winner) {
+          toggleWinnerBannerOn(true, data.winner);
+        } else {
+          toggleWinnerBannerOn(false);
         }
       });
 
       socket.on('newGame', () => {
         gameCanStart = true;
-        console.log('asdfasdfsadf');
       })
 
       $('#player-btn-o').click(() => {
@@ -109,7 +118,6 @@
       });
 
       $('#new-game-btn').click(event => {
-        $('#winner').text('').addClass('hide').removeClass('show');
         socket.emit('eraseGame');
         gameCanStart = false;
       });

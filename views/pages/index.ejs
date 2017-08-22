@@ -18,9 +18,6 @@
     <button class="btn btn-default play-btn" data-mark="O">Play O</button>
   </div>
 
-  <div id="players-container">
-  </div>
-
   <table class="table" id="tictactoe">
     <tr>
       <td id="11"></td>
@@ -45,9 +42,11 @@
   <script>
     $(() => {
       const socket = io();
+      console.log(socket.io.engine.id);
 
       let boardData = null;   // tracks current moves
       let gameCanStart = false;
+      let localSocketId = null;
 
       let updateTurn = (turn) => {
         $('#current-turn').text(turn);
@@ -64,6 +63,29 @@
         });
       }
 
+      let updatePlayers = players => {
+        console.log(players)
+
+        if (Object.keys(players).length >=2) {
+          Object.keys(players).forEach(socketId => {
+            let player = players[socketId];
+            $(`.play-btn[data-mark="${player.mark}"]`).text(`${player.mark} - ${player.name}`).prop('disabled', true);
+          }); 
+        } else {
+          let localPlayer = players[localSocketId];
+          if (localPlayer) {
+            let otherMark = localPlayer.mark === 'X' ? 'O' : 'X';
+            $(`.play-btn[data-mark="${localPlayer.mark}"]`).text(`${localPlayer.mark} - ${localPlayer.name}`).prop('disabled', true);
+            $(`.play-btn[data-mark="${otherMark}"]`).text(`${otherMark} - waiting for other player`).prop('disabled', true);
+          } else {
+            Object.keys(players).forEach(socketId => {
+              let player = players[socketId];
+              $(`.play-btn[data-mark="${player.mark}"]`).text(`${player.mark} - ${player.name}`).prop('disabled', true);
+            }); 
+          }
+        }
+      }
+
       let makeElementVisible = (elementShouldBeVisible, $element) => {
         if (elementShouldBeVisible) {
           $element.addClass('show').removeClass('hide');
@@ -74,6 +96,7 @@
 
       socket.on('connect', () => {
         console.log('Connected to websocket')
+        localSocketId = socket.id;
       })
 
       socket.on('gameInfo', data => {
@@ -81,7 +104,7 @@
         boardData = data;
         updateTurn(data.turn);
         updateBoard(data.board);
-        // updatePlayers(data.players);
+        updatePlayers(data.players);
 
         let $winnerBanner = $('#winner');
         if (data.winner) {
@@ -94,27 +117,36 @@
 
       socket.on('newGame', () => {
         gameCanStart = true;
+        console.log('starting a new game');
       })
 
+      socket.on('gameErased', () => {
+        gameCanStart = false;
+        localPlayer = null;
+        $(`.play-btn[data-mark="X"]`).text('Play X').prop('disabled', false);
+        $(`.play-btn[data-mark="O"]`).text('Play O').prop('disabled', false);        
+      });
+
       $('.play-btn').click((event) => {
-        let mark = event.target.dataset.mark;
         let name = window.prompt('What is your name?');
-        socket.emit('newPlayer', {mark: mark, name: name});
-
-
+        if (name) {
+          let mark = event.target.dataset.mark;
+          localPlayer = name;
+          socket.emit('newPlayer', {mark: mark, name: name});
+        }
       });
 
       // click on a square -> make a move
       $('#tictactoe td').click((event) => {
         if (boardData.winner === null && gameCanStart) {
           let pos = event.target.id;
+
           socket.emit('makeMove', {pos: pos});
         }
       });
 
       $('#new-game-btn').click(event => {
         socket.emit('eraseGame');
-        gameCanStart = false;
       });
 
     });

@@ -25,8 +25,8 @@ const server = app.listen(app.get('port'), () => {
 const io = require('socket.io').listen(server);
 var game = game || new Game();   // game stored in local memory
 io.on('connection', function(socket){
-  console.log('a user connected');
-  
+  console.log('a user connected ' + socket.id);
+
   /*
     socket events:
 
@@ -47,7 +47,7 @@ io.on('connection', function(socket){
     game.setPlayer(data.mark, data.name, socket.id);
     io.emit('gameInfo', game.toJson());
 
-    if (game.getPlayers().length == 2) {
+    if (Object.keys(game.players).length == 2) {
         // start a new game
         game = new Game();
         io.emit('newGame');
@@ -67,6 +67,7 @@ io.on('connection', function(socket){
   socket.on('eraseGame', () => {
     // erase all player and game data
     game = new Game();
+    io.emit('gameErased');
     io.emit('gameInfo', game.toJson());
   });
 

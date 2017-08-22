@@ -13,9 +13,6 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
 
-// game stored in local memory
-let currentGame = null;
-let players = {};   // should be two-element object keyed by socket id
 
 app.get('/', (req, res) => {
   res.render('pages/index');
@@ -24,12 +21,13 @@ app.get('/', (req, res) => {
 const server = app.listen(app.get('port'), () => {
   console.log('Node app is running on port', app.get('port'));
 });
-const io = require('socket.io').listen(server);
 
+const io = require('socket.io').listen(server);
+var game = game || new Game();   // game stored in local memory
 io.on('connection', function(socket){
   console.log('a user connected');
+  
   /*
-
     socket events:
 
     gameInfo     - gets a current game, if any
@@ -39,22 +37,20 @@ io.on('connection', function(socket){
     makeMove     - player makes a move
   */
 
-  currentGame = new Game();
-
-  io.emit('gameInfo', currentGame.toJson())
+  
+  // immediately send out gameInfo to update UIs
+  io.emit('gameInfo', game.toJson())
 
   socket.on('newPlayer', data => {
-    // data = {'mark': 'X'}
+    // data = {'mark': 'X', 'name': 'Gang'}
 
-    players[socket.id] = {
-        mark: data.mark
-    }
-
-    console.log(players)
-    if (Object.keys(players).length == 2) {
+    game.setPlayer(data.mark, data.name, socket.id);
+    console.log(game.players)
+    if (Object.keys(game.players).length == 2) {
         // start a new game
-        currentGame = new Game();
+        game = new Game();
         io.emit('newGame');
+        console.log('new game initiated');
     }
   })
 
@@ -63,15 +59,14 @@ io.on('connection', function(socket){
     // Client sends the position only
     // data = {pos: pos}
 
-    currentGame.setSquareAndChangeTurns(data.pos);
-    io.emit('gameInfo', currentGame.toJson());
+    game.setSquareAndChangeTurns(data.pos);
+    io.emit('gameInfo', game.toJson());
   })
 
   socket.on('eraseGame', () => {
     // erase all player and game data
-    players = {};
-    currentGame = new Game();
-    io.emit('gameInfo', currentGame.toJson());
+    game = new Game();
+    io.emit('gameInfo', game.toJson());
   });
 
 
